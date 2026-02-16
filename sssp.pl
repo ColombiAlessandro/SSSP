@@ -68,10 +68,9 @@ list_heap(H) :- listing(heap_entry(H, P, K, V)).
 
 head(H, K, V) :- heap_entry(H,1,K,V). 
 
-extract(H, K, V) :- heap_entry(H, P, K, V), heap_size(H, S), S1 is S-1, retract(heap(H, S)), assert(heap(H, S1)), P1 is P+1, retract(heap_entry(H, P, K, V))	, adapt(H, P1), heapify(H, P1).
+extract(H, K, V) :- heap_entry(H, P, K, V), heap_size(H, S), S1 is S-1, retract(heap(H, S)), assert(heap(H, S1)), P1 is P+1, retract(heap_entry(H, P, K, V)), adapt(H, P1), heapify(H, 1), heapify(H, 1).
 
-adapt(H, P) :- heap_size(H, S), P =< S, heap_entry(H, P, K, V), retract(heap_entry(H, P, K, V)), P1 is P-1, assert(heap_entry(H, P1, K, V)), P2 is P + 1, adapt(H, P2). 
-adapt(H, P) :- heap_size(H, S), P>S.
+adapt(H, P) :- heap_size(H, S), heap_entry(H, P, K, V), retract(heap_entry(H, P, K, V)), P1 is P-1, assert(heap_entry(H, P1, K, V)), P2 is P + 1, adapt(H, P2), heapify(H, 1). 	
 modify_key(H, NewKey, OldKey, V) :- retract(heap_entry(H, P, OldKey, V)), assert(heap_entry(H, P, NewKey, V)). 
 
 swap(H, K1, K2) :- retract(heap_entry(H, P1, K1, V1)), retract(heap_entry(H, P2, K2, V2)), assert(heap_entry(H, P2, K1, V1)), assert(heap_entry(H, P1, K2, V2)), heapify(H, 1).
@@ -104,6 +103,11 @@ delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).
 ?- insert(heap, 7, c).
 ?- insert(heap, 5, d).
 ?- insert(heap, 1, e).
+?- insert(heap, 15, f).
+?- insert(heap, 27, g).
+?- insert(heap, 12, h).
+?- insert(heap, 4, i).
+
 
 
 
