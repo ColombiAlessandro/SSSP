@@ -149,7 +149,9 @@ adapt(H, P) :-
 	adapt(H, P2), 
 	heapify(H, 1).
 
-modify_key(H, NewKey, OldKey, V) :- retract(heap_entry(H, P, OldKey, V)), assert(heap_entry(H, P, NewKey, V)). 
+modify_key(H, NewKey, OldKey, V) :- 
+	retract(heap_entry(H, P, OldKey, V)), 
+	assert(heap_entry(H, P, NewKey, V)). 
 
 swap(H, K1, K2) :- 
 	retract(heap_entry(H, P1, K1, V1)), 
