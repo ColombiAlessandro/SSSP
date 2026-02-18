@@ -15,13 +15,18 @@ vertices(G, [H|T]) :- vertex(G, H), vertices(G, T).
 
 list_vertices(G) :- listing(vertex(G, K)).  %questo predicato con listing stampa sia regole che fatti
 
-list_vertices_2(G) :- vertex(G, V),
-		      writeln(vertex(G, V)),
-		      fail. %predicato aggiuntivo che stampa solo i fatti tramite writeln
+list_vertices_2(G) :- 
+			  		vertex(G, V),
+		      		writeln(vertex(G, V)),
+		      		fail. %predicato aggiuntivo che stampa solo i fatti tramite writeln
 
 new_arc(G, U, V, Weight) :- arc(G, U, V, Weight), !.
 new_arc(G, U, V, Weight) :- arc(G, V, U, Weight), !.
-new_arc(G, U, V, Weight) :- arc(G, U, V, K), K\=Weight, retract(arc(G, U, V, K)), new_arc(G, U, V, Weight), !.
+new_arc(G, U, V, Weight) :- 
+	arc(G, U, V, K), K\=Weight, 
+	retract(arc(G, U, V, K)), 
+	new_arc(G, U, V, Weight), !.
+
 new_arc(G, U, V, Weight) :- assert(arc(G, U, V, Weight)), !.
 
 new_arc(G, U, V) :- new_arc(G, U, V, 1), !.
@@ -52,50 +57,108 @@ empty(H) :- heap(H,S), S = 0.
 not_empty(H) :- \+ empty(H).
 
 
-heapify(H, P) :- 
+heapify(H, P) :- 		%caso heapify per nodo foglia
 	Ps is P*2, 
 	\+ heap_entry(H, Ps, _, _),
 	Pd is Ps + 1, \+ heap_entry(H, Pd, _, _).
-heapify(H, P) :- Ps is P*2, heap_entry(H, Ps, Ks, Vs), Pd is Ps + 1, \+ heap_entry(H, Pd, Kd, Vd), heap_entry(H, P, K, V), heapify(H, Ps), K =< Ks.
-heapify(H, P) :- Ps is P*2, heap_entry(H, Ps, Ks, Vs), Pd is Ps + 1, \+ heap_entry(H, Pd, Kd, Vd), heap_entry(H, P, K, V), heapify(H, Ps), K > Ks, swap(H, K, Ks).
-heapify(H, P) :- Ps is P*2, heap_entry(H, Ps, Ks, Vs), Pd is Ps + 1, heap_entry(H, Pd, Kd, Vd), heap_entry(H, P, K, V), heapify(H, Ps), heapify(H, Pd), K =< Ks, K =< Kd.
-heapify(H, P) :- Ps is P*2, heap_entry(H, Ps, Ks, Vs), Pd is Ps + 1, heap_entry(H, Pd, Kd, Vd), heap_entry(H, P, K, V), heapify(H, Ps), heapify(H, Pd), K > Ks, swap(H, K, Ks), K =< Kd.
-heapify(H, P) :- Ps is P*2, heap_entry(H, Ps, Ks, Vs), Pd is Ps + 1, heap_entry(H, Pd, Kd, Vd), heap_entry(H, P, K, V), heapify(H, Ps), heapify(H, Pd), K =< Ks, K > Kd, swap(H, K, Kd).
+	
+heapify(H, P) :- 		%caso heapify per nodo con solo figlio sinistro senza scambio
+	Ps is P*2, 
+	heap_entry(H, Ps, Ks, Vs), 
+	Pd is Ps + 1, 
+	\+ heap_entry(H, Pd, Kd, Vd), 
+	heap_entry(H, P, K, V), 
+	heapify(H, Ps), K =< Ks.
+	
+heapify(H, P) :- %caso heapify per nodo con solo figlio sinistro con scambio
+	Ps is P*2, 
+	heap_entry(H, Ps, Ks, Vs), 
+	Pd is Ps + 1, 
+	\+ heap_entry(H, Pd, Kd, Vd), 
+	heap_entry(H, P, K, V), 
+	heapify(H, Ps), 
+	K > Ks, 
+	swap(H, K, Ks).
+	
+heapify(H, P) :- 		%caso heapify per nodo con entrambi i figli senza scambio
+	Ps is P*2, 
+	heap_entry(H, Ps, Ks, Vs), 
+	Pd is Ps + 1, 
+	heap_entry(H, Pd, Kd, Vd), 
+	heap_entry(H, P, K, V), 
+	heapify(H, Ps), 
+	heapify(H, Pd), 
+	K =< Ks, 
+	K =< Kd.
+	
+heapify(H, P) :- 		%caso heapify per nodo con entrmabi i figli e scambio sul figlio sinistro
+	Ps is P*2, 
+	heap_entry(H, Ps, Ks, Vs), 
+	Pd is Ps + 1, 
+	heap_entry(H, Pd, Kd, Vd), 
+	heap_entry(H, P, K, V), 
+	heapify(H, Ps), 
+	heapify(H, Pd), 
+	K > Ks, 
+	swap(H, K, Ks), 
+	K =< Kd.
+	
+heapify(H, P) :- 		%caso heapify per nodo con entrmabi i figli e scambio sul figlio destro
+	Ps is P*2, 
+	heap_entry(H, Ps, Ks, Vs), 
+	Pd is Ps + 1, 
+	heap_entry(H, Pd, Kd, Vd), 
+	heap_entry(H, P, K, V), 
+	heapify(H, Ps), 
+	heapify(H, Pd), 
+	K =< Ks, 
+	K > Kd, 
+	swap(H, K, Kd).
 
-insert(H, K, V) :- heap_size(H, S), retract(heap(H,S)), S1 is S + 1, assert(heap(H,S1)), assert(heap_entry(H, S1, K, V)), heapify(H, 1), !. 
+insert(H, K, V) :- 
+	heap_size(H, S), 
+	retract(heap(H,S)), 
+	S1 is S + 1, 
+	assert(heap(H,S1)), 
+	assert(heap_entry(H, S1, K, V)), 
+	heapify(H, 1), !. 
 
 list_heap(H) :- listing(heap_entry(H, P, K, V)).
 
 head(H, K, V) :- heap_entry(H,1,K,V). 
 
-extract(H, K, V) :- heap_entry(H, P, K, V), heap_size(H, S), S1 is S-1, retract(heap(H, S)), assert(heap(H, S1)), P1 is P+1, retract(heap_entry(H, P, K, V)), adapt(H, P1), heapify(H, 1), heapify(H, 1).
+extract(H, K, V) :- 
+	heap_entry(H, P, K, V), 
+	heap_size(H, S), 
+	S1 is S-1, 
+	retract(heap(H, S)), 
+	assert(heap(H, S1)), 
+	P1 is P+1, 
+	retract(heap_entry(H, P, K, V)), 
+	adapt(H, P1), 
+	heapify(H, 1), 
+	heapify(H, 1).
 
-adapt(H, P) :- heap_size(H, S), heap_entry(H, P, K, V), retract(heap_entry(H, P, K, V)), P1 is P-1, assert(heap_entry(H, P1, K, V)), P2 is P + 1, adapt(H, P2), heapify(H, 1). 	
+adapt(H, P) :- 
+	heap_size(H, S), 
+	heap_entry(H, P, K, V), 
+	retract(heap_entry(H, P, K, V)), 
+	P1 is P-1, 
+	assert(heap_entry(H, P1, K, V)), 
+	P2 is P + 1, 
+	adapt(H, P2), 
+	heapify(H, 1).
+
 modify_key(H, NewKey, OldKey, V) :- retract(heap_entry(H, P, OldKey, V)), assert(heap_entry(H, P, NewKey, V)). 
 
-swap(H, K1, K2) :- retract(heap_entry(H, P1, K1, V1)), retract(heap_entry(H, P2, K2, V2)), assert(heap_entry(H, P2, K1, V1)), assert(heap_entry(H, P1, K2, V2)), heapify(H, 1).
+swap(H, K1, K2) :- 
+	retract(heap_entry(H, P1, K1, V1)), 
+	retract(heap_entry(H, P2, K2, V2)), 
+	assert(heap_entry(H, P2, K1, V1)), 
+	assert(heap_entry(H, P1, K2, V2)), 
+	heapify(H, 1).
 
 delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ?- new_heap(heap).
 ?- insert(heap, 10, a).
@@ -107,26 +170,3 @@ delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).
 ?- insert(heap, 27, g).
 ?- insert(heap, 12, h).
 ?- insert(heap, 4, i).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
