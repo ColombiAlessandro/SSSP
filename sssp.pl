@@ -4,13 +4,13 @@
 
 :- dynamic vertex/2.
 
-new_graph(G) :- graph(G), !.
+new_graph(G) :- graph(G), !.				%inserisce il grafo nella base dati prolog se non presente
 new_graph(G) :- assert(graph(G)), !.
 
-new_vertex(G, V) :- vertex(G, V), !.
+new_vertex(G, V) :- vertex(G, V), !.		%inserisce il vertice V relativo al grafo G nella base dati Prolog se non già presente
 new_vertex(G, V) :- assert(vertex(G, V)), !.
 
-vertices(G, []).
+vertices(G, []).							%restituisce una lista di tutti i vertici del grafo G
 vertices(G, [H|T]) :- vertex(G, H), vertices(G, T).   
 
 list_vertices(G) :- listing(vertex(G, K)).  %questo predicato con listing stampa sia regole che fatti
@@ -20,41 +20,41 @@ list_vertices_2(G) :-
 		      		writeln(vertex(G, V)),
 		      		fail. %predicato aggiuntivo che stampa solo i fatti tramite writeln
 
-new_arc(G, U, V, Weight) :- arc(G, U, V, Weight), !.
-new_arc(G, U, V, Weight) :- arc(G, V, U, Weight), !.
-new_arc(G, U, V, Weight) :- 
-	arc(G, U, V, K), K\=Weight, 
+new_arc(G, U, V, Weight) :- arc(G, U, V, Weight), !.		
+new_arc(G, U, V, Weight) :- arc(G, V, U, Weight), !.		
+new_arc(G, U, V, Weight) :- 		%se esiste già un percorso dal nodo U al nodo V il valore del peso viene aggiornato. 
+	arc(G, U, V, K), K\=Weight, 	
 	retract(arc(G, U, V, K)), 
 	new_arc(G, U, V, Weight), !.
 
-new_arc(G, U, V, Weight) :- assert(arc(G, U, V, Weight)), !.
+new_arc(G, U, V, Weight) :- assert(arc(G, U, V, Weight)), !.		%inserisce un nuovo arco dal vertice U al vertice V del grafo G con peso Weight nella base dati Prolog
 
 new_arc(G, U, V) :- new_arc(G, U, V, 1), !.
 
-arcs(G, L) :- findall(arc(G, U, V, K), arc(G, U, V, K), L).
+arcs(G, L) :- findall(arc(G, U, V, K), arc(G, U, V, K), L).			%restiuisce una lista di tutti gli archi del grafo G
 
-neighbors(G, V, Ln) :-
+neighbors(G, V, Ln) :-		%restituisce una lista di tutti e soli i vicini di un nodo V, ovvero tutti i nodi collegati direttamente a V
     vertex(G, V),
     arcs(G, La),
     findall(N, member(arc(G,V,N,_), La), Ln).
 
-list_arcs(G) :- listing(arc(G, U, V, J)).
+list_arcs(G) :- listing(arc(G, U, V, J)).		%stampa a video tutti gli archi del grafo G 
 
-list_graph(G) :- list_arcs(G), list_vertices(G).
+list_graph(G) :- list_arcs(G), list_vertices(G).		%stampa a video vertici e archi del grafo G
 
-delete_graph(G) :- retractall(vertex(G, _)), retractall(arc(G, _, _, _)). 
+delete_graph(G) :- retractall(vertex(G, _)), retractall(arc(G, _, _, _)), retract(graph(G)). 		%elimina tutti gli elementi del grafo G ed il grafo stesso
 
 :- dynamic heap/2.
 :- dynamic heap_entry/4.
 
 new_heap(H) :- heap(H,_S), !.
-new_heap(H) :- assert(heap(H, 0)), !. 
+new_heap(H) :- assert(heap(H, 0)), !.		%creazione di un nuovo heap nella base dati prolog
 
-heap_size(H, S) :- heap(H, S).
+heap_size(H, S) :- heap(H, S).		%restituisce dimensione dello heap H
 
-empty(H) :- heap(H,S), S = 0.
+empty(H) :- heap(H,S), S = 0.		%predicato vero qwuando heap H è vuoto
 
-not_empty(H) :- \+ empty(H).
+not_empty(H) :- \+ empty(H).		%predicato vero quando heap H non è vuoto
 
 
 heapify(H, P) :- 		%caso heapify per nodo foglia
@@ -126,7 +126,7 @@ heapify(H, P) :- 		%caso heapify per nodo con entrmabi i figli e scambio sul fig
 	heapify(H, Ps), 
 	heapify(H, Pd).
 	
-heapify(H, P) :- 
+heapify(H, P) :- 		%caso heapify per nodo con entrambi i figli, figlio destro minore del figlio sinistro, quindi scambio con il destro
 	Ps is P*2, 
 	heap_entry(H, Ps, Ks, Vs), 
 	Pd is Ps + 1, 
@@ -141,7 +141,7 @@ heapify(H, P) :-
 	heapify(H, Ps), 
 	heapify(H, Pd).
 	
-heapify(H, P) :- 
+heapify(H, P) :- 		%caso heapify per nodo con entrmbi i figli, figlio sinistro minore del figlio destro, quindi scambio con il sinistro
 	Ps is P*2, 
 	heap_entry(H, Ps, Ks, Vs), 
 	Pd is Ps + 1, 
@@ -156,7 +156,7 @@ heapify(H, P) :-
 	heapify(H, Ps), 
 	heapify(H, Pd).
 
-insert(H, K, V) :- 
+insert(H, K, V) :- 		%inseriemtno di un nuovo nodo nello heap, con aumento dimensione totale heap e heapify dello heap
 	heap_size(H, S), 
 	retract(heap(H,S)), 
 	S1 is S + 1, 
@@ -164,11 +164,11 @@ insert(H, K, V) :-
 	assert(heap_entry(H, S1, K, V)), 
 	heapify(H, 1), !. 
 
-list_heap(H) :- listing(heap_entry(H, P, K, V)).
+list_heap(H) :- listing(heap_entry(H, P, K, V)).		%elencazione di tutti i nodi dello heap
 
-head(H, K, V) :- heap_entry(H,1,K,V). 
+head(H, K, V) :- heap_entry(H,1,K,V).		%visualizzazione della radice dello heap
 
-extract(H, K, V) :- 
+extract(H, K, V) :- 		%estrazione della radice dallo heap, con dimiunzione della dimensione totale, adattamwnto delle posizioni dei nodi sottostanti e heapify dello heap
 	heap_entry(H, P, K, V), 
 	P = 1,
 	heap_size(H, S), 
@@ -181,7 +181,7 @@ extract(H, K, V) :-
 	heapify(H, 1),
 	!.
 
-adapt(H, P) :- 
+adapt(H, P) :- 		%aggiustamento posizioni degli elementi colpiti dalla rimozione della radice
 	heap_size(H, S), 
 	heap_entry(H, P, K, V), 
 	P1 is P-1,
@@ -201,7 +201,7 @@ swap(H, K1, K2) :-
 	assert(heap_entry(H, P2, K1, V1)), 
 	assert(heap_entry(H, P1, K2, V2)).
 
-delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).
+delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).		%eliminazione di uno heap e di tutti i suoi nodi
 
 :- dynamic distance/3.
 
@@ -210,15 +210,15 @@ delete_heap(H) :- retractall(heap_entry(H, _, _, _)), retract(heap(H, _)).
 :- dynamic previous/3.
 
 
-change_distance(G, V, NewDist) :- 
+change_distance(G, V, NewDist) :- 		%cambio distanza dalla sorgente
 	retractall(distance(G, V, _)),
 	assert(distance(G, V; NewDist)).
 
-change_previous(G, V, U) :-
+change_previous(G, V, U) :-			%cambio nodo precdente nel cammino dalla radice
 	retractall(previous(G, V, _)),
 	assert(previous(G, V, U)).
 	
-dijkstra_sssp(G, Source):-
+dijkstra_sssp(G, Source):- 			%chiamata per applicare algorimo di Dijkstra, con creazione dello heap, elencazione dei vicini alla sorgente e loro distanze, e visita di tutto lo heap
 	new_heap(dijkheap),
 	neighbors(G, S, L1),
 	source_weights(G, S, L1, dijkheap),
@@ -228,17 +228,16 @@ dijkstra_sssp(G, Source):-
 	
 
 source_weights(G, S, [], _).
-source_weights(G, S, [H|T], Heap):- 
+source_weights(G, S, [H|T], Heap):- 		%calcolo dei pesi di ogni nodo adiacente alla sorgente
 	arc(G, S, H, K),
 	assert(distance(G, H, K)),
 	insert(Heap, K, distance(G, H, K)),
 	assert(previous(G, H, S)),
 	source_weights(G, S, T, Heap).
 
-visit(G, Heap) :- 
+visit(G, Heap) :-		%termino la visita dello heap quando lo stesso è vuoto
 	empty(Heap).
-	
-visit(G, Heap) :-
+visit(G, Heap) :-		%finchè ci sono elementi nello heap estraggo la testa, calcolo i suoi vicini e il loro peso e ricorsivamente eseguo sugli altri vicini
 	not_empty(Heap),
 	extract(Heap, K, V),
 	arg(2, V, N),
@@ -248,8 +247,7 @@ visit(G, Heap) :-
 	visit(G, Heap).
 
 node_weights(G, N, [], _, K).	
-	
-node_weights(G, N, [H|T], Heap, Kp):- 
+node_weights(G, N, [H|T], Heap, Kp):- 		%se il nodo non è ancora stato visitato inserisco nello heap i dati, assumo diatanza e predecessore ed eseguo chiamata ricorsiva
 	\+ visited(G, H),
 	arc(G, N, H, K),
 	Ktot is K + Kp,
@@ -258,7 +256,7 @@ node_weights(G, N, [H|T], Heap, Kp):-
 	insert(Heap, Ktot, distance(G, H, Ktot)),
 	node_weights(G, S, T, Heap, Kp).	
 	
-node_weights(G, N, [H|T], Heap, Kp):- 
+node_weights(G, N, [H|T], Heap, Kp):- 		%nel caso in cui la distanza calcolata precedentemente sia maggiore della distanza da percorrere con il nuovo nodo cambio la distanza dala radice e il predecessore, inserisco nuova entry nello heap e eseguo chiamata ricorsiva
 	visited(G, H),
 	arc(G, N, H, K),
 	Ktot is K + Kp,
@@ -269,7 +267,7 @@ node_weights(G, N, [H|T], Heap, Kp):-
 	insert(Heap, Ktot, distance(G, H, Ktot)),
 	node_weights(G, S, T, Heap, Kp).	
 	
-node_weights(G, N, [H|T], Heap, Kp):- 
+node_weights(G, N, [H|T], Heap, Kp):- 		%nel caso in cui la distanza calcolata precedentemente sia minore della distanza da percorrere con il nuovo nodo non modifico nulla ed eseguo la chiamata ricorsiva
 	visited(G, H),
 	arc(G, N, H, K),
 	Ktot is K + Kp,
