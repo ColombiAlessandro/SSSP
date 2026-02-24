@@ -1,4 +1,3 @@
-
 ; definizione tabelle hash
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
@@ -189,9 +188,34 @@
                 (heapify-up arr i)	;se la nuova chiave è minore della precedente devo spostare la nuova chiave verso l'alto, altrimenti verso il basso
                 (heapify arr i heap-id))
             t); restituisco T
-          (ricerca-e-modifica heap-id arr size new-key old-key value (1+ i))))))	;se non ho trovato chiave chiamo ricordsivamente la funzione sul prossimo elemento
+          (ricerca-e-modifica heap-id arr size new-key old-key value (1+ i))))))	;se non ho trovato chiave chiamo ricorsivamente la funzione sul prossimo elemento
           
           
+(defun sssp-dist (graph-id vertex-id)
+	(gethash (list graph-id vertex-id) *distances*))	;restiuisco distanza presente nella tabella hash
+	
+(defun sssp-change-dist (graph-id vertex-id new-dist)
+	(setf (gethash (list graph-id vertex-id) *distances*) new-dist)
+	nil)	;setto la nuova distanza nella tabella hash
+  
+(defun sssp-visited (graph-id vertex-id)
+	(gethash (list graph-id vertex-id) *visited*))	;restiuisco T se nodo visitato e NIL se non visitato
+	
+(defun sssp-previous (graph-id V)
+	(gethash (list graph-id V) *previous*)) ;restuisco il predecessore del nodo passato come parametro
+	
+(defun sssp-change-previous (graph-id V U)
+	(setf (gethash (list graph-id V) *previous*) U)
+	nil)	;modifico il predecessore nella tabella hash
+	
+
+(defun sssp-dijkstra (graph-id source)
+	;TODO
+	nil)
+	
+(defun sssp-shortest-path (G Source V)
+	;TODO
+	)
         
 (new-graph 'grafo)
 (new-vertex 'grafo 'a)
