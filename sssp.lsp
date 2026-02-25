@@ -1,3 +1,4 @@
+
 ; definizione tabelle hash
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
@@ -11,7 +12,7 @@
 (defun is-graph (graph-id)
 	(gethash graph-id *graphs*))
 	
-;creo il grafo se non esiste, altirmenti lo restituisco
+;creo il grafo se non esiste, altrimenti restituisco il suo identificatore
 (defun new-graph (graph-id)
 	(or 	(gethash graph-id *graphs*)
 		(setf (gethash graph-id *graphs*) graph-id)))
@@ -40,7 +41,7 @@
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp (second key)))
-                 (when (string= tmp graph-id)
+                 (when (equal tmp graph-id)
                    (push key lista))))
              *vertices*)
     lista)) 
@@ -56,38 +57,38 @@
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp (second key)))
-                 (when (string= tmp graph-id)
+                 (when (equal tmp graph-id)
                    (push key lista))))
              *arcs*)
     lista))
 
-;calcolo i vicini del nodo passato, li metto in una lista e li restituisco
+;restituisce la lista degli archi uscenti
 (defun graph-vertex-neighbors (graph-id vertex-id)
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp-graph (second key))
                      (tmp-vertex (third key)))
-                 (when (and (string= tmp-graph graph-id)
-                            (string= tmp-vertex vertex-id))
+                 (when (and (equal tmp-graph graph-id)
+                            (equal tmp-vertex vertex-id))
                    (push key lista))))
              *arcs*)
     lista))
     
-;metto in una lista vertici e archi di una grafo e la restiuisco
+;metto in una lista vertici e archi di un grafo e la restituisco
 (defun graph-print (graph-id)
 	(let((lista nil)) 
 		(push (graph-vertices graph-id) lista)
 		(push (graph-arcs graph-id) lista)
 		lista))
 		
-;creo un nuovo heap se non persente, imposto size a 0 e creo array aggiustabile
+;creo un nuovo heap se non presente, imposto size a 0 e creo array aggiustabile
 (defun new-heap (heap-id &optional (initial-capacity 1))
 	(or (gethash heap-id *heaps*)
 	    (setf (gethash heap-id *heaps*)
 	    (list 'heap heap-id 0
 	    (make-array initial-capacity :adjustable t)))))		
 		
-;rimuovo heap dlala hash table
+;rimuovo heap dalla hash table
 (defun heap-delete (heap-id)
 	(remhash heap-id *heaps*))
 	
@@ -115,7 +116,7 @@
 
         (heapify-up array size)))))		;sistemo heap portando in alto il nuovo elemento
    
-;funzione per gestire heap
+;funzione ricorsiva che sistema ordine del minheap dopo inserimento
 (defun heapify-up (heap i)
   (when (> i 0)		;se non sono alla radice faccio heapify
     (let* ((parent (floor (- i 1) 2))
@@ -146,7 +147,7 @@
       (rotatef (aref heap i) (aref heap posMin))
       (heapify heap posMin heap-id))))
      
-;funzone che stampa contenuto della hash table per un heap dato
+;funzione che stampa contenuto della hash table per un heap dato
 (defun heap-print (heap-id)
 	(gethash heap-id *heaps*))
 	
@@ -161,7 +162,7 @@
          (arr (fourth tmp))
          (size (third tmp)))
     (let ((root (aref arr 0)))	;salvo localmente il valore estratto
-      (setf (aref arr 0) (aref arr (1- size)))	;prendo ultimo elemento dello heap e lo metto al posro della radice
+      (setf (aref arr 0) (aref arr (1- size)))	;prendo ultimo elemento dello heap e lo metto al posto della radice
       (decf (third tmp))	;decremento size dello heap
       (setf (fourth tmp) (adjust-array (fourth tmp) (third tmp)))	;allineo dimensione array con size dello heap (elimino ultimo valore inutile dell'array)
       (heapify arr 0 heap-id)	;heapify per sistemare heap
@@ -170,12 +171,11 @@
 
       
       
-(defun heap-modify-key (heap-id new-key old-key value)
-;inizializzo variabili utili alla funzione
+(defun heap-modify-key (heap-id new-key old-key value) ;funzione ricorsiva che cerca la chiave di un elemento nello heap e la modifica 
   (let* ((heap (gethash heap-id *heaps*))
          (arr  (fourth heap))
          (size (third heap)))
-    (ricerca-e-modifica heap-id arr size new-key old-key value 0)))	;chiamo funzione ricorsiva che cerca la chiave e la cambia partendo dalla radice
+    (ricerca-e-modifica heap-id arr size new-key old-key value 0)))
 
 (defun ricerca-e-modifica (heap-id arr size new-key old-key value i)
   (when (< i size)	;se indice è corretto
@@ -190,51 +190,105 @@
             t); restituisco T
           (ricerca-e-modifica heap-id arr size new-key old-key value (1+ i))))))	;se non ho trovato chiave chiamo ricorsivamente la funzione sul prossimo elemento
           
-          
 (defun sssp-dist (graph-id vertex-id)
-	(gethash (list graph-id vertex-id) *distances*))	;restiuisco distanza presente nella tabella hash
+	(gethash (list graph-id vertex-id) *distances*))	;restituisco distanza presente nella tabella hash
 	
 (defun sssp-change-dist (graph-id vertex-id new-dist)
 	(setf (gethash (list graph-id vertex-id) *distances*) new-dist)
 	nil)	;setto la nuova distanza nella tabella hash
   
 (defun sssp-visited (graph-id vertex-id)
-	(gethash (list graph-id vertex-id) *visited*))	;restiuisco T se nodo visitato e NIL se non visitato
+	(gethash (list graph-id vertex-id) *visited*))	;restituisco T se nodo visitato e NIL se non visitato
 	
 (defun sssp-previous (graph-id V)
-	(gethash (list graph-id V) *previous*)) ;restuisco il predecessore del nodo passato come parametro
+	(gethash (list graph-id V) *previous*)) ;restituisco il predecessore del nodo passato come parametro
 	
 (defun sssp-change-previous (graph-id V U)
 	(setf (gethash (list graph-id V) *previous*) U)
 	nil)	;modifico il predecessore nella tabella hash
 	
-
+(defun sssp-set-visited (graph-id vertex-id)
+	(setf (gethash (list graph-id vertex-id) *visited*) t)
+	nil)	;setto la nuova distanza nella tabella hash
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          
+(defun sssp-init (graph-id source) ;funzione che resetta le strutture dati e assegna i valori iniziali necessari per algoritmo di Dijkstra
+  (clrhash *distances*)
+  (clrhash *previous*)
+  (clrhash *visited*)
+  (mapc (lambda (v)	;applico funzione su ogni elemento della lista ed ignoro risultato
+          (let ((vertex (third v)))
+            (sssp-change-dist graph-id vertex most-positive-fixnum) ;uso costante di CLISP come distanza infinita
+            (setf (gethash (list graph-id vertex) *visited*) nil)))
+        (graph-vertices graph-id))
+  (sssp-change-dist graph-id source 0))	;imposto distanza della sorgente da sè stessa a 0
+  
 (defun sssp-dijkstra (graph-id source)
-	;TODO
-	nil)
-	
-(defun sssp-shortest-path (G Source V)
-	;TODO
-	)
-        
-(new-graph 'grafo)
-(new-vertex 'grafo 'a)
-(new-vertex 'grafo 'b)
-(new-vertex 'grafo 'c)
-(new-vertex 'grafo 'd)
-(new-vertex 'grafo 'e)
-(new-arc 'grafo 'a 'b 1)
-(new-arc 'grafo 'a 'c 3)
-(new-arc 'grafo 'b 'e 5)
-(new-arc 'grafo 'c 'e 1)
-(new-arc 'grafo 'b 'd 3)
-(new-arc 'grafo 'e 'd 1)
-(new-heap 'heap)
-(heap-insert 'heap 5 'a)
-(heap-insert 'heap 7 'b)
-(heap-insert 'heap 2 'c)
-(heap-insert 'heap 1 'd)
-(heap-insert 'heap 10 'e)
-(heap-insert 'heap 4 'f)
-(heap-insert 'heap 6 'g)
-(heap-insert 'heap 8 'h)
+  (sssp-init graph-id source) ;prima di applicare Dijkstra applico funzione di inizializzazione
+
+  (let ((heap-id 'dijkstra-heap))
+    (new-heap heap-id)	;creo heap per Dijkstra
+
+    (heap-insert heap-id 0 source)	;inserisco nello heap la sorgente con chiave la sua distanza dalla radice (0)
+
+    (dijkstra-visit graph-id heap-id)	;chiamo la funzione per la visita
+
+    (heap-delete heap-id)	;alla fine della computazione, avendo i dati nelle tabelle hash, elimino lo heap
+    nil))
+
+(defun dijkstra-visit (graph-id heap-id)
+  (unless (heap-empty heap-id)	;se lo heap non è vuoto proseguo con la funzione
+    (let* ((entry (heap-extract heap-id)) ;creo variabili locali per la funzione estraendo la radice dello heap
+           (dist (first entry))
+           (u    (second entry)))
+
+      (unless (sssp-visited graph-id u)	;se il nodo non è ancora visitato lo metto come visitato
+        (sssp-set-visited graph-id u)
+
+        (aggiorna graph-id u dist heap-id))) ;chiamo funzione che aggiorna le distanze nello heap e nelle tabelle hash
+;richiamo ricorsivamente la funzione sul resto dello heap
+    (dijkstra-visit graph-id heap-id))) ;richiamo ricorsivamente la funzione sul resto dello heap
+    
+(defun aggiorna (graph-id u dist heap-id)
+  (mapc ;per ogni vicino del nodo in esame eseguo la lambda
+   (lambda (arc)
+     (let* ((v (fourth arc))
+            (w (fifth arc))
+            (alt (+ dist w))	;calcolo della nuova distanza tramite il nuovo percorso
+            (old (sssp-dist graph-id v))) ;creazione variabili utili alla funzione
+
+       (when (and (not (sssp-visited graph-id v))
+                  (< alt old)) ;se il nodo non è visitato e la distanza passando per il nuovo vertice è minore aggiorno le tabelle hash e re-inserisco il nodo nello heap
+         (sssp-change-dist graph-id v alt)
+         (sssp-change-previous graph-id v u)
+         (heap-insert heap-id alt v))))   (graph-vertex-neighbors graph-id u)))
+   
+(defun path (graph-id source v) ;funzione che restituisce la lista di nodi che formano lo shortest path
+  (if (null v)	; se il nodo è nullo restituisco NIL
+      nil
+      (if (equal v source) ;se il nodo sorgente e destinazione sono uguali restituisco una lista con solo quel nodo
+          (list source)
+          (append (path graph-id ;altrimenti creo una lista concatenando le liste dei nodi che formano lo shortest path
+                        source
+                        (sssp-previous graph-id v))
+                  (list v))))) ;restituisco la lista finita
+  
+(defun sssp-shortest-path (graph-id source target) ;funzione che calcola il percorso minimo tra due nodi
+	  (path-to-arcs graph-id (path graph-id source target) (graph-arcs graph-id))) ;Calcola il percorso minimo come lista di nodi e poi converte in archi.
+
+(defun path-to-arcs (graph-id vertices arcs) ;funzione che converte da nodi ad archi
+	  (cond
+	    ((or (null vertices) (null (cdr vertices)))
+	     nil) ;se ho 0 o 1 nodo non ho archi e restituisco nil
+	    (t
+	     (cons (find-arc graph-id (car vertices) (cadr vertices) arcs) ;concateno l'arco che rappresenta il passaggio tra nodi e chiamo ricorsivamente la funzione
+		   (path-to-arcs graph-id (cdr vertices) arcs)))))
+
+(defun find-arc (graph-id u v arcs) ;funzione che cerca arco in hash table
+	  (cond
+	    ((null arcs) nil) ;se non ho archi restituisco NIL
+	    ((and (equal (second (car arcs)) graph-id)
+		  (equal (third (car arcs)) u)
+		  (equal (fourth (car arcs)) v))
+	     (car arcs))
+	    (t (find-arc graph-id u v (cdr arcs))))) ;se i dati sugli archi sono corretti richiamo la funzione sul resto della lista degli archi.
