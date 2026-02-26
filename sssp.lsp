@@ -1,4 +1,3 @@
-
 ; definizione tabelle hash
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
@@ -19,6 +18,8 @@
 
 ;rimuovo dalle tabelle hash tutti i riferimenti al grafo passato per parametro
 (defun delete-graph (graph-id)
+  (when (null (nth-value 1 (gethash graph-id *graphs*)))
+  	(error "Il grafo non esiste"))
   (remhash graph-id *graphs*)
   
   (maphash (lambda (key value)		;rimuovo vertici
@@ -27,17 +28,21 @@
            *vertices*)
   
   (maphash (lambda (key value)		;rimuovo archi
-             (when (string= graph-id (second key))
+             (when (equal graph-id (second key))
                (remhash key *arcs*)))
            *arcs*))
 	
 ;creo nuovo vertice per il grafo passato come parametro
 (defun new-vertex (graph-id vertex-id)
+	  (when (null (nth-value 1 (gethash graph-id *graphs*)))
+  	(error "Il grafo non esiste"))
 	(setf (gethash (list 'vertex graph-id vertex-id) *vertices*)
 	(list 'vertex graph-id vertex-id)))
 	
 ;metto i vertici del grafo in una lista e la restituisco
 (defun graph-vertices (graph-id)
+    (when (null (nth-value 1 (gethash graph-id *graphs*)))
+  	(error "Il grafo non esiste"))
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp (second key)))
@@ -49,11 +54,17 @@
 
 ;creo arco che collega i vertici del grafo passati come parametro ed il suo peso
 (defun new-arc (graph-id vertex-id vertex2-id &optional (weight 1)) 
+	(when (or (null (nth-value 1 (gethash graph-id *graphs*)))
+		  (null (nth-value 1 (gethash (list 'vertex graph-id vertex-id) *vertices*)))
+                  (null (nth-value 1 (gethash (list 'vertex graph-id vertex2-id) *vertices*))))
+  		       (error "Errore, elementi non presenti"))
 	(setf (gethash (list 'arc graph-id vertex-id vertex2-id weight) *arcs*)
 	(list 'arc graph-id vertex-id vertex2-id weight)))
 
 ;metto gli archi del grafo in una lista e la restituisco
 (defun graph-arcs (graph-id)
+  (when (null (nth-value 1 (gethash graph-id *graphs*)))
+  	(error "Il grafo non esiste"))
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp (second key)))
@@ -64,6 +75,9 @@
 
 ;restituisce la lista degli archi uscenti
 (defun graph-vertex-neighbors (graph-id vertex-id)
+	(when (or (null (nth-value 1 (gethash graph-id *graphs*)))
+          (null (nth-value 1 (gethash (list 'vertex graph-id vertex-id) *vertices*))))
+ 	 (error "Errore, elementi non presenti"))
   (let ((lista nil))
     (maphash (lambda (key value)
                (let ((tmp-graph (second key))
@@ -76,6 +90,8 @@
     
 ;metto in una lista vertici e archi di un grafo e la restituisco
 (defun graph-print (graph-id)
+	(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
 	(let((lista nil)) 
 		(push (graph-vertices graph-id) lista)
 		(push (graph-arcs graph-id) lista)
@@ -90,18 +106,26 @@
 		
 ;rimuovo heap dalla hash table
 (defun heap-delete (heap-id)
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 	(remhash heap-id *heaps*))
 	
 ;se la size dello heap è 0 vuol dire che è vuoto
 (defun heap-empty (heap-id)
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 	(= 0 (third (gethash heap-id *heaps*))))
 	
 ;se la size non è 0 vuol dire che è non vuoto
 (defun heap-not-empty (heap-id)
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 	(not (heap-empty heap-id)))
 
 ;funzione per inserimento elemento in heap
 (defun heap-insert (heap-id K V)
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
   (let ((value (gethash heap-id *heaps*)))
     (when value		;faccio il seguito se esiste value
       (let ((size  (third value))
@@ -149,14 +173,20 @@
      
 ;funzione che stampa contenuto della hash table per un heap dato
 (defun heap-print (heap-id)
+(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 	(gethash heap-id *heaps*))
 	
 (defun heap-head (heap-id)
+(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 	(setf tmp (gethash heap-id *heaps*))
 	(setf arr (fourth tmp))
 	(aref arr 0)); essendo ultimo valore valutato CLISP lo restiuisce in automatico
 
 (defun heap-extract (heap-id)
+(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
 ;inizializzo variabili utili per la funzione
   (let* ((tmp (gethash heap-id *heaps*))
          (arr (fourth tmp))
@@ -172,6 +202,8 @@
       
       
 (defun heap-modify-key (heap-id new-key old-key value) ;funzione ricorsiva che cerca la chiave di un elemento nello heap e la modifica 
+(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
   (let* ((heap (gethash heap-id *heaps*))
          (arr  (fourth heap))
          (size (third heap)))
@@ -213,17 +245,26 @@
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
           
 (defun sssp-init (graph-id source) ;funzione che resetta le strutture dati e assegna i valori iniziali necessari per algoritmo di Dijkstra
+	(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash (list 'vertex graph-id source) *vertices*)))
+		(error "Vertice non presente"))
   (clrhash *distances*)
   (clrhash *previous*)
   (clrhash *visited*)
   (mapc (lambda (v)	;applico funzione su ogni elemento della lista ed ignoro risultato
           (let ((vertex (third v)))
             (sssp-change-dist graph-id vertex most-positive-fixnum) ;uso costante di CLISP come distanza infinita
-            (setf (gethash (list graph-id vertex) *visited*) nil)))
+            (setf (gethash (list 'vertex graph-id vertex) *visited*) nil)))
         (graph-vertices graph-id))
-  (sssp-change-dist graph-id source 0))	;imposto distanza della sorgente da sè stessa a 0
+  (sssp-change-dist graph-id source 0))	;imposto distanza della sorgente da sè stessa a 0\
   
 (defun sssp-dijkstra (graph-id source)
+
+(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash (list 'vertex graph-id source) *vertices*)))
+		(error "Vertice non presente"))
   (sssp-init graph-id source) ;prima di applicare Dijkstra applico funzione di inizializzazione
 
   (let ((heap-id 'dijkstra-heap))
@@ -237,6 +278,10 @@
     nil))
 
 (defun dijkstra-visit (graph-id heap-id)
+	(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
   (unless (heap-empty heap-id)	;se lo heap non è vuoto proseguo con la funzione
     (let* ((entry (heap-extract heap-id)) ;creo variabili locali per la funzione estraendo la radice dello heap
            (dist (first entry))
@@ -250,6 +295,10 @@
     (dijkstra-visit graph-id heap-id))) ;richiamo ricorsivamente la funzione sul resto dello heap
     
 (defun aggiorna (graph-id u dist heap-id)
+(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash heap-id *heaps*)))
+		(error "Heap non presente"))
   (mapc ;per ogni vicino del nodo in esame eseguo la lambda
    (lambda (arc)
      (let* ((v (fourth arc))
@@ -264,6 +313,10 @@
          (heap-insert heap-id alt v))))   (graph-vertex-neighbors graph-id u)))
    
 (defun path (graph-id source v) ;funzione che restituisce la lista di nodi che formano lo shortest path
+(when (null (nth-value 1 (gethash graph-id *graphs*)))
+	(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash (list 'vertex graph-id source) *vertices*)))
+		(error "Sorgente non presente"))
   (if (null v)	; se il nodo è nullo restituisco NIL
       nil
       (if (equal v source) ;se il nodo sorgente e destinazione sono uguali restituisco una lista con solo quel nodo
@@ -274,6 +327,12 @@
                   (list v))))) ;restituisco la lista finita
   
 (defun sssp-shortest-path (graph-id source target) ;funzione che calcola il percorso minimo tra due nodi
+	(when (null (nth-value 1 (gethash graph-id *graphs*)))
+		(error "Grafo non presente"))
+	(when (null (nth-value 1 (gethash (list 'vertex graph-id source) *vertices*)))
+		(error "Sorgente non corretta"))
+	(when (null (nth-value 1 (gethash (list 'vertex graph-id target) *vertices*)))
+		(error "Destinazione non corretta"))
 	  (path-to-arcs graph-id (path graph-id source target) (graph-arcs graph-id))) ;Calcola il percorso minimo come lista di nodi e poi converte in archi.
 
 (defun path-to-arcs (graph-id vertices arcs) ;funzione che converte da nodi ad archi
