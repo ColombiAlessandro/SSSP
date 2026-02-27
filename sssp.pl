@@ -53,7 +53,7 @@ new_arc(G, U, V) :-
   vertex(G, V),
   new_arc(G, U, V, 1), !.
 
-%restiuisce una lista di tutti gli archi del grafo G
+%restituisce una lista di tutti gli archi del grafo G
 arcs(G, L) :-
   findall(arc(G, U, V, K), arc(G, U, V, K), L).  
 
@@ -91,7 +91,7 @@ new_heap(H) :- assert(heap(H, 0)), !.
 %restituisce dimensione dello heap H
 heap_size(H, S) :- heap(H, S).          
 
-%predicato vero qwuando heap H è vuoto
+%predicato vero quando heap H è vuoto
 empty(H) :- heap(H,S), S = 0.           
 
 %predicato vero quando heap H non è vuoto
@@ -145,7 +145,7 @@ heapify(H, P) :-
   K =< Ksn, 
   K =< Kdn.
 
-%caso heapify per nodo con entrmabi i figli e scambio sul figlio sinistro
+%caso heapify per nodo con entrambi i figli e scambio sul figlio sinistro
 heapify(H, P) :-               
   heap(H, _),
   Ps is P*2, 
@@ -161,7 +161,7 @@ heapify(H, P) :-
   heapify(H, Ps), 
   heapify(H, Pd).
 
-%caso heapify per nodo con entrmabi i figli e scambio sul figlio destro
+%caso heapify per nodo con entrambi i figli e scambio sul figlio destro
 heapify(H, P) :-                
   heap(H, _),
   Ps is P*2, 
@@ -194,7 +194,7 @@ heapify(H, P) :-
   heapify(H, Ps), 
   heapify(H, Pd).
 
-%caso heapify per nodo con entrmbi i figli, figlio sinistro minore del figlio destro, quindi scambio con il sinistro
+%caso heapify per nodo con entrambi i figli, figlio sinistro minore del figlio destro, quindi scambio con il sinistro
 heapify(H, P) :-                
   heap(H, _),
   Ps is P*2, 
@@ -227,7 +227,7 @@ list_heap(H) :- heap(H, _), listing(heap_entry(H, P, K, V)).
 %consultazione della radice dello heap
 head(H, K, V) :- heap(H, _), heap_entry(H,1,K,V).               
 
-%estrazione della radice dallo heap, dimiunzione della dimensione, adattamento delle posizioni e heapify dello heap
+%estrazione della radice dallo heap, diminuzione della dimensione, adattamento delle posizioni e heapify dello heap
 extract(H, K, V) :-             
   heap(H, _),
   heap_entry(H, P, K, V), 
@@ -285,7 +285,7 @@ change_distance(G, V, NewDist) :-
   retract(distance(G, V, _)),
   assert(distance(G, V, NewDist)).
 
-%cambio nodo precdente nel cammino dalla radice
+%cambio nodo precedente nel cammino dalla radice
 change_previous(G, V, U) :- 
   graph(G),
   vertex(G, V),
@@ -293,7 +293,7 @@ change_previous(G, V, U) :-
   retract(previous(G, V, _)),
   assert(previous(G, V, U)).
 
-%Applica algorimo di Dijkstra: creazione dello heap, elencazione dei vicini alla sorgente e distanze, e visita dello heap
+%Applica algoritmo di Dijkstra: creazione dello heap, elencazione dei vicini alla sorgente e distanze, e visita dello heap
 dijkstra_sssp(G, Source):-      
   graph(G),
   vertex(G, Source),
@@ -384,7 +384,7 @@ shortest_path(G, Source, V, Path):-
 %Se i due nodi sono uguali non faccio nulla
 path(G, Source, Source, []). 
 
-%Se i nodi sono diversi assegno ricorsivamente arco alla testa della lista
+%Se i nodi sono diversi assegno ricorsivamente l'arco alla testa della lista
 path(G, Source, V, [H|T]):- 
   graph(G),
   vertex(G, Source),
