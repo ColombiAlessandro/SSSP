@@ -1,3 +1,7 @@
+;Colombi Alessandro, mat. XXXXXX
+;Garancini Andrea, mat. 928256
+;Gaspani Sebastiano, mat. XXXXXX
+
 ;;; definizione tabelle hash
 (defparameter *vertices* (make-hash-table :test #'equal))
 (defparameter *arcs* (make-hash-table :test #'equal))
