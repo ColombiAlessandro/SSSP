@@ -1,3 +1,9 @@
+%Colombi Alessandro, mat. XXXXXX
+%Garancini Andrea, mat. 928256
+%Gaspani Sebastiano, mat. XXXXXX
+
+
+
 :- dynamic graph/1.
 
 :- dynamic arc/4.
